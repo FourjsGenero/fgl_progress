@@ -1,0 +1,49 @@
+LAYOUT (VERSION="1.00",STYLE="main2")
+GRID
+{
+Title:   [ttl                                                 ]
+Comment: [cmt                                                 ]
+         [                                                    ]
+         [                                                    ]
+
+                           [b0                                ]
+Min value (NULL for inf)   [vmin                              ]
+Max value (NULL for inf)   [vmax                              ]
+Step value:                [vstp                              ]
+
+Sleep seconds between steps:  [wsec                           ]
+User can interrupt (Cancel):  [ccl                            ]
+User confirmation (OK):       [cnf                            ]
+Time display format:          [etm                            ]
+Value display format:         [dvf                            ]
+Display refresh interval:     [dri                            ]
+
+        [b1            ]              [b2            ]
+
+}
+END
+END
+
+ATTRIBUTES
+EDIT ttl = FORMONLY.title;
+TEXTEDIT cmt = FORMONLY.comment;
+EDIT vmin = FORMONLY.vmin;
+EDIT vmax = FORMONLY.vmax;
+EDIT vstp = FORMONLY.vstp;
+BUTTON b0 : clear, TEXT="Infinite mode";
+COMBOBOX wsec = FORMONLY.waitsecs, NOT NULL,
+    ITEMS=((0,"No sleep"),(1,"1 second"),(2,"2 seconds"));
+COMBOBOX ccl = FORMONLY.canintr, NOT NULL,
+    ITEMS=((TRUE,"Enabled"),(FALSE,"Disabled"));
+COMBOBOX cnf = FORMONLY.confirm, NOT NULL,
+    ITEMS=((TRUE,"Enabled"),(FALSE,"Disabled"));
+COMBOBOX etm = FORMONLY.showtimefmt,
+    ITEMS=("%S%F3 secs","%H:%M:%S%F3 hours","%d %H:%M days");
+COMBOBOX dvf = FORMONLY.showvalfmt,
+    ITEMS=("---&.&&","--&.&&","-<<<<<<<<<<<&.&&&&&");
+COMBOBOX dri = FORMONLY.refreshtm, NOT NULL,
+    ITEMS=("0.005","0.010","0.100","0.500","1.000","2.000");
+BUTTON b1 : test, TEXT="Start test";
+BUTTON b2 : cancel, TEXT="Close";
+END
+

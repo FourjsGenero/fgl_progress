@@ -1,0 +1,453 @@
+#+ Progress dialog
+#+
+
+IMPORT util
+
+PUBLIC TYPE progress_dialog_value_type DECIMAL(32,6)
+
+PUBLIC TYPE progress_dialog RECORD
+    initialized BOOLEAN,
+    title STRING,
+    comment STRING,
+    vmin progress_dialog_value_type,
+    vmax progress_dialog_value_type,
+    vstp progress_dialog_value_type,
+    value progress_dialog_value_type,
+    confirm BOOLEAN,
+    canintr BOOLEAN,
+    infinite BOOLEAN,
+    dispval INTEGER,
+    showtimefmt STRING,
+    showvalfmt STRING,
+    canceled BOOLEAN,
+    ts_start DATETIME YEAR TO FRACTION(3),
+    ts_last DATETIME YEAR TO FRACTION(3),
+    ts_infinite DATETIME YEAR TO FRACTION(3),
+    ts_disp_interval INTERVAL SECOND TO FRACTION(3),
+    window ui.Window,
+    form ui.Form
+END RECORD
+
+PRIVATE FUNCTION _fatal_error(msg STRING) RETURNS()
+    DISPLAY "fglprogress: Fatal error: ", msg
+    EXIT PROGRAM 1
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _check_initialized() RETURNS()
+    IF NOT this.initialized THEN
+        CALL _fatal_error("Not initialized")
+    END IF
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _check_open(on BOOLEAN) RETURNS()
+    CALL this._check_initialized()
+    IF on AND this.window IS NULL THEN
+        CALL _fatal_error("Not open")
+    END IF
+    IF NOT on AND this.window IS NOT NULL THEN
+        CALL _fatal_error("Not closed")
+    END IF
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _check_infinite(on BOOLEAN) RETURNS()
+    CALL this._check_initialized()
+    IF on AND NOT this.infinite THEN
+        CALL _fatal_error("Progress has not limits")
+    END IF
+    IF NOT on AND this.infinite THEN
+        CALL _fatal_error("Progress is not infinite")
+    END IF
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _check_vstp() RETURNS()
+    CALL this._check_initialized()
+    IF this.vstp IS NULL THEN
+        CALL _fatal_error("Step value is NULL")
+    END IF
+END FUNCTION
+
+#+ Initializes a progress dialog object.
+#+
+#+ @param title The title of the progress window.
+#+ @param comment The comment to be displayed in the progress window.
+#+ @param vmin The minimum value for the progress bar.
+#+ @param vmax The maximum value for the progress bar.
+#+ @param vstp The step value to be used by the step() method.
+#+
+PUBLIC FUNCTION (this progress_dialog) initialize( title STRING, comment STRING,
+                                                   vmin progress_dialog_value_type,
+                                                   vmax progress_dialog_value_type,
+                                                   vstp progress_dialog_value_type )
+                                       RETURNS()
+    IF this.initialized THEN
+       CALL _fatal_error("Already in used")
+    END IF
+    LET this.initialized = TRUE
+    LET this.title = title
+    LET this.comment = comment
+    LET this.confirm = FALSE
+    LET this.canintr = TRUE
+    LET this.ts_disp_interval = INTERVAL(0.100) SECOND TO FRACTION(3)
+    LET this.value = NULL
+    IF vmin IS NOT NULL AND vmax IS NOT NULL THEN
+        LET this.infinite = FALSE
+        IF vmax <= vmin THEN
+            CALL _fatal_error("Max value must be greater as min value")
+        END IF
+        LET this.vmin = vmin
+        LET this.vmax = vmax
+        IF vstp IS NOT NULL THEN
+           LET this.vstp = vstp
+        ELSE
+           LET this.vstp = (this.vmax - this.vmin) / 10
+        END IF
+    ELSE
+        LET this.infinite = TRUE
+        LET this.vmin = 1
+        LET this.vmax = 100
+        LET this.vstp = NULL -- Computed in _step()
+    END IF
+END FUNCTION
+
+#+ Defines the time interval to refresh the display.
+#+
+#+ The show(), progress() or step()/stepInfinite() methods may be called very often.
+#+ To avoid to many network roundtrips with the front-end, the module defines a
+#+ default refresh internal of 100 milliseconds.
+#+
+#+ If the refresh time interval is NULL, the display is refreshed each time one of
+#+ the above methods are used.
+#+
+#+ @param itv The display refresh interval.
+#+
+PUBLIC FUNCTION (this progress_dialog) setRefreshInterval(itv INTERVAL SECOND TO FRACTION(3)) RETURNS ()
+    CALL this._check_initialized()
+    LET this.ts_disp_interval = itv
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
+    DEFINE iv INTERVAL HOUR(4) TO FRACTION(3)
+    DEFINE exectime, currval STRING
+    IF LENGTH(this.comment)==0 THEN
+        CALL this.form.setFieldHidden("comment", 1)
+    ELSE
+        CALL this.form.setFieldHidden("comment", 0)
+        DISPLAY BY NAME this.comment
+    END IF
+    IF LENGTH(this.showtimefmt)==0 THEN
+        CALL this.form.setFieldHidden("exectime", 1)
+    ELSE
+        CALL this.form.setFieldHidden("exectime", 0)
+        LET iv = CURRENT - this.ts_start
+        LET exectime = util.Interval.format(iv,this.showtimefmt)
+        DISPLAY BY NAME exectime
+    END IF
+    IF LENGTH(this.showvalfmt)==0 THEN
+        CALL this.form.setFieldHidden("currval", 1)
+    ELSE
+        CALL this.form.setFieldHidden("currval", 0)
+        LET currval = this.value USING this.showvalfmt
+        DISPLAY BY NAME currval
+    END IF
+    CALL this.form.setElementHidden("interrupt", IIF(this.canintr,0,1))
+    CALL this.form.setElementHidden("terminate", IIF(this.confirm,0,1))
+END FUNCTION
+
+#+ Sets the flag to get an OK button for confirmation when done.
+#+
+#+ @param on TRUE = with OK button, FALSE = without.
+#+
+PUBLIC FUNCTION (this progress_dialog) withConfirmation(on BOOLEAN)
+    CALL this._check_initialized()
+    LET this.confirm = on
+END FUNCTION
+
+#+ Sets the flag to get a Cancel button to interrupt the process.
+#+
+#+ @param on TRUE = with Cancel button, FALSE = without.
+#+
+PUBLIC FUNCTION (this progress_dialog) withInterruption(on BOOLEAN)
+    CALL this._check_initialized()
+    LET this.canintr = on
+END FUNCTION
+
+#+ Sets the format to show the execution time at the end of the comment.
+#+
+#+ @param fmt The util.Intervale.format() style format, like "%H:%M:%S"
+#+
+PUBLIC FUNCTION (this progress_dialog) setExecTimeDisplayFormat(fmt STRING)
+    CALL this._check_initialized()
+    LET this.showtimefmt = fmt
+END FUNCTION
+
+#+ Sets the format to show the current value at the end of the comment.
+#+
+#+ @param fmt The USING format for the value, like "----&.&&"
+#+
+PUBLIC FUNCTION (this progress_dialog) setValueDisplayFormat(fmt STRING)
+    CALL this._check_initialized()
+    LET this.showvalfmt = fmt
+END FUNCTION
+
+
+#+ Returns TRUE if the progress is infinite.
+PUBLIC FUNCTION (this progress_dialog) isInfinite() RETURNS BOOLEAN
+    CALL this._check_initialized()
+    RETURN this.infinite
+END FUNCTION
+
+#+ Opens the progress window.
+PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
+    CALL this._check_open(FALSE)
+    LET int_flag = FALSE
+    LET this.canceled = FALSE
+    LET this.ts_start = CURRENT
+    LET this.ts_last = this.ts_start
+    LET this.ts_infinite = this.ts_start
+    -- TODO: Manage a list of windows to open several progress dialogs?
+    OPEN WINDOW __fglprogress
+        WITH
+        FORM "fglprogress"
+        ATTRIBUTES(STYLE = "dialog2", TEXT = this.title)
+    LET this.window = ui.Window.getCurrent()
+    LET this.form = this.window.getForm()
+    CALL this._sync_deco()
+    CALL this.show()
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _setValue(value progress_dialog_value_type) RETURNS()
+    DEFINE vlen progress_dialog_value_type
+    CALL this._check_open(TRUE)
+    IF value >= this.vmin AND value <= this.vmax THEN
+        LET this.value = value
+    ELSE
+        IF value < this.vmin THEN
+            LET this.value = this.vmin
+        ELSE
+            LET this.value = this.vmax
+        END IF
+    END IF
+    LET vlen = (this.vmax - this.vmin)
+    LET this.dispval = 100 * ((value - this.vmin) / vlen)
+END FUNCTION
+
+#+ Sets the progressbar value without display refresh.
+#+
+#+ @param value The value to be set in the progressbar.
+#+
+PUBLIC FUNCTION (this progress_dialog) setValue(value progress_dialog_value_type) RETURNS()
+    CALL this._check_infinite(FALSE)
+    CALL this._setValue(value)
+END FUNCTION
+
+#+ Returns current progress value.
+PUBLIC FUNCTION (this progress_dialog) getValue() RETURNS progress_dialog_value_type
+    CALL this._check_initialized()
+    RETURN this.value
+END FUNCTION
+
+#+ Returns progress start value.
+PUBLIC FUNCTION (this progress_dialog) getValueMin() RETURNS progress_dialog_value_type
+    CALL this._check_initialized()
+    RETURN this.vmin
+END FUNCTION
+
+#+ Returns progress end value.
+PUBLIC FUNCTION (this progress_dialog) getValueMax() RETURNS progress_dialog_value_type
+    CALL this._check_initialized()
+    RETURN this.vmax
+END FUNCTION
+
+#+ Returns progress step value.
+PUBLIC FUNCTION (this progress_dialog) getStep() RETURNS progress_dialog_value_type
+    CALL this._check_initialized()
+    RETURN this.vstp
+END FUNCTION
+
+#+ Returns TRUE if the progress was interrupted by user (INT_FLAG==TRUE).
+#+
+#+ The method resets INT_FLAG to FALSE, so callers do not have to reset it.
+#+
+PUBLIC FUNCTION (this progress_dialog) interrupted() RETURNS BOOLEAN
+    CALL this._check_open(TRUE)
+    IF this.canintr AND int_flag THEN
+       LET int_flag = FALSE
+       LET this.canceled = TRUE
+       RETURN TRUE
+    ELSE
+       RETURN FALSE
+    END IF
+END FUNCTION
+
+#+ Returns TRUE if the progress was canceled.
+PUBLIC FUNCTION (this progress_dialog) wasCanceled() RETURNS BOOLEAN
+    CALL this._check_initialized()
+    RETURN this.canceled
+END FUNCTION
+
+#+ Sets the comment without display refresh.
+#+
+#+ @param comment The comment to be displayed in the progress window.
+#+
+PUBLIC FUNCTION (this progress_dialog) setComment(comment STRING) RETURNS()
+    CALL this._check_initialized()
+    LET this.comment = comment
+END FUNCTION
+
+#+ Returns current progress comment.
+PUBLIC FUNCTION (this progress_dialog) getComment() RETURNS STRING
+    CALL this._check_initialized()
+    RETURN this.comment
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _refreshDisplay() RETURNS()
+    CURRENT WINDOW IS __fglprogress
+    CALL this._sync_deco()
+    DISPLAY BY NAME this.dispval
+    CALL ui.Interface.refresh()
+END FUNCTION
+
+#+ Displays current value in progress dialog window.
+#+
+#+ The method will not refresh the display, if the last call was done before
+#+ the refresh interval has expired.
+#+
+PUBLIC FUNCTION (this progress_dialog) show() RETURNS()
+    DEFINE ts INTERVAL SECOND TO FRACTION(3)
+    CALL this._check_open(TRUE)
+    IF this.ts_disp_interval IS NOT NULL
+    AND this.ts_last != this.ts_start
+    AND this.value < this.vmax
+    THEN
+        LET ts = CURRENT - this.ts_last
+        IF ts < this.ts_disp_interval THEN
+            RETURN
+        END IF
+    END IF
+    CALL this._refreshDisplay()
+    LET this.ts_last = CURRENT
+END FUNCTION
+
+#+ Sets the progress value and refreshes display.
+#+
+#+ @param value The value to be set in the progressbar.
+#+
+PUBLIC FUNCTION (this progress_dialog) progress(value progress_dialog_value_type)
+    CALL this._check_open(TRUE)
+    CALL this._check_infinite(FALSE)
+    CALL this._setValue(value)
+    CALL this.show()
+END FUNCTION
+
+PRIVATE FUNCTION (this progress_dialog) _step() RETURNS BOOLEAN
+    DEFINE r BOOLEAN = TRUE
+    DEFINE x progress_dialog_value_type
+    CALL this._check_open(TRUE)
+    IF this.value IS NULL THEN -- First call
+       LET x = this.vmin
+       CALL this._setValue(x)
+       CALL this.show()
+       IF NOT this.infinite THEN
+          CALL this._check_vstp()
+       ELSE
+          LET this.vstp = (this.vmax - this.vmin - x) * 0.10
+       END IF
+    ELSE
+       IF NOT this.infinite THEN
+          LET x = this.value + this.vstp
+          IF x > this.vmax THEN
+              CALL this._setValue(this.vmax)
+              CALL this._refreshDisplay() -- Always sync display
+              LET r = FALSE -- Must stop now
+          ELSE
+              CALL this._setValue(x)
+              CALL this.show()
+          END IF
+       ELSE
+          IF CURRENT - this.ts_infinite > this.ts_disp_interval THEN
+              LET this.ts_infinite = CURRENT
+              LET x = this.value + this.vstp
+              CALL this._setValue(x)
+              CALL this.show()
+              LET this.vstp = (this.vmax - this.vmin - x) * 0.10
+          END IF
+       END IF
+    END IF
+    RETURN r
+END FUNCTION
+
+#+ Increments the progress value and refreshes display.
+#+
+#+ Only to be used when the limits are know, as a replacement for progress().
+#+
+#+ @return TRUE if a new step could be done, FALSE if we reached the end.
+#+
+PUBLIC FUNCTION (this progress_dialog) step() RETURNS BOOLEAN
+    CALL this._check_infinite(FALSE)
+    RETURN this._step()
+END FUNCTION
+
+#+ Increments the progress value in infinite mode and refreshes display.
+#+
+#+ Only to show progress when the limits are unknown (specified as NULL).
+#+ This method can be called infinitely: The progress bar increments will 
+#+ be smaller and smaller, to never reach the end.
+#+ Consider displaying execution time in the comment (withExecutionTime())
+#+ The display refresh is optimized: If this method is called many times
+#+ in a loop, the progress value and the display refresh will be adapted,
+#+ to avoid to much network roundtrips with the front-end.
+#+
+#+ @code
+#+ DEFINE p fglprogress.progress_dialog, x INTEGER
+#+ ...
+#+ CALL p.initialize("title","comment",NULL,NULL,NULL)
+#+ CALL p.open()
+#+ FOR x=1 TO 100000
+#+     CALL p.stepInfinite()
+#+ END FOR
+#+ CALL p.close()
+#+
+PUBLIC FUNCTION (this progress_dialog) stepInfinite() RETURNS ()
+    DEFINE b BOOLEAN
+    CALL this._check_infinite(TRUE)
+    LET b = this._step()
+END FUNCTION
+
+#+ Cancels the progress session.
+#+
+#+ Simulates a user interruption. Closing the progress dialog will not
+#+ ask for user confirmation if configured.
+#+
+PUBLIC FUNCTION (this progress_dialog) cancel()
+    CALL this._check_open(TRUE)
+    LET this.canceled = TRUE
+END FUNCTION
+
+#+ Terminates a progress session.
+#+
+#+ This method closes the progress dialog window.
+#+ Progress dialog window can be re-opened with open()
+#+
+PUBLIC FUNCTION (this progress_dialog) close()
+    CALL this._check_open(TRUE)
+    IF this.confirm AND NOT this.canceled THEN
+       MENU ""
+          ON ACTION terminate EXIT MENU
+          ON ACTION close EXIT MENU -- cross button
+       END MENU
+    END IF
+    CLOSE WINDOW __fglprogress
+    LET this.window = NULL
+    LET this.form = NULL
+END FUNCTION
+
+#+ Finalizes the progress dialog object usage.
+#+
+#+ Progress dialog object can be re-initialized with initialize()
+#+
+PUBLIC FUNCTION (this progress_dialog) free()
+    CALL this._check_initialized()
+    CALL this._check_open(FALSE)
+    INITIALIZE this.* TO NULL
+    LET this.initialized = FALSE
+END FUNCTION

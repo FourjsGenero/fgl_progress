@@ -1,0 +1,22 @@
+LAYOUT (VERSION="1.00",STYLE="dialog2")
+GRID
+{
+[cmt                                                          ]
+[                                                             ]
+[                                                             ]
+[prg                                                          ]
+[val                 ]                      [etm              ]
+[                :b1             :b2            :             ]
+}
+END
+END
+
+ATTRIBUTES
+LABEL cmt = FORMONLY.comment, JUSTIFY=CENTER;
+PROGRESSBAR prg  = FORMONLY.dispval,VALUEMIN=0,VALUEMAX=100;
+LABEL val = FORMONLY.currval;
+LABEL etm = FORMONLY.exectime;
+BUTTON b1 : interrupt, TEXT="Cancel";
+BUTTON b2 : terminate, TEXT="Close";
+END
+
