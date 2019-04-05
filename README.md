@@ -36,7 +36,8 @@ This library is under [MIT license](./LICENSE)
 
 ## TODO
 
-* Display estimated remaining time, computed from previous steps with a known range
+* Optional image / icon on the left of the comment.
+* Multi-line comment
 * FUNCTION reference/callback for custom rendering with webcomponent (SVG gauge)
 
 ## Code example: Fixed range mode

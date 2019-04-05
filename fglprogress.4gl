@@ -19,6 +19,7 @@ PUBLIC TYPE progress_dialog RECORD
     infinite BOOLEAN,
     dispval INTEGER,
     showtimefmt STRING,
+    showtimerem BOOLEAN,
     showvalfmt STRING,
     canceled BOOLEAN,
     ts_start DATETIME YEAR TO FRACTION(3),
@@ -153,23 +154,39 @@ PUBLIC FUNCTION (this progress_dialog) setRefreshInterval(itv INTERVAL SECOND TO
     LET this.ts_disp_interval = itv
 END FUNCTION
 
+PRIVATE FUNCTION (this progress_dialog) _getExecTime() RETURNS STRING
+    DEFINE pd, pr DECIMAL(10)
+    DEFINE et INTERVAL HOUR(4) TO FRACTION(3)
+    LET et = this.ts_last - this.ts_start
+    IF this.showtimerem THEN
+        IF this.infinite THEN
+           RETURN NULL
+        END IF
+        LET pd = (this.value - this.vmin) / (this.vmax - this.vmin)
+        LET pr = 1 - pd
+        LET et = (et / pd) * pr
+    END IF
+    RETURN util.Interval.format(et, this.showtimefmt)
+END FUNCTION
+
 PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
-    DEFINE iv INTERVAL HOUR(4) TO FRACTION(3)
     DEFINE exectime, dispvaltxt STRING
+    -- Comment
     IF LENGTH(this.comment)==0 THEN
         CALL this.form.setFieldHidden("comment", 1)
     ELSE
         CALL this.form.setFieldHidden("comment", 0)
         DISPLAY BY NAME this.comment
     END IF
+    -- Execution time
     IF LENGTH(this.showtimefmt)==0 THEN
         CALL this.form.setFieldHidden("exectime", 1)
     ELSE
         CALL this.form.setFieldHidden("exectime", 0)
-        LET iv = CURRENT - this.ts_start
-        LET exectime = util.Interval.format(iv,this.showtimefmt)
+        LET exectime = this._getExecTime()
         DISPLAY BY NAME exectime
     END IF
+    -- Current value
     IF LENGTH(this.showvalfmt)==0 OR this.infinite THEN
         CALL this.form.setFieldHidden("dispvaltxt", 1)
     ELSE
@@ -181,6 +198,7 @@ PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
         END IF
         DISPLAY BY NAME dispvaltxt
     END IF
+    -- Buttons
     CALL this.form.setElementHidden("interrupt", IIF(this.canintr,0,1))
     CALL this.form.setElementHidden("terminate", IIF(this.confirm,0,1))
 END FUNCTION
@@ -220,7 +238,7 @@ PUBLIC FUNCTION (this progress_dialog) withSqlInterruption(on BOOLEAN)
     LET this.sqlintr = on
 END FUNCTION
 
-#+ Sets the format to show the execution time at the end of the comment.
+#+ Sets the format to show the execution time.
 #+
 #+ @param fmt The util.Intervale.format() style format, like "%H:%M:%S"
 #+
@@ -229,7 +247,18 @@ PUBLIC FUNCTION (this progress_dialog) setExecTimeDisplayFormat(fmt STRING)
     LET this.showtimefmt = fmt
 END FUNCTION
 
-#+ Sets the format to show the current value at the end of the comment.
+#+ Sets the flag to show the remaining execution time.
+#+
+#+ The time format must be specified with setExecTimeDisplayFormat().
+#+
+#+ @param on TRUE to show the execution time as remaining time.
+#+
+PUBLIC FUNCTION (this progress_dialog) withRemainingExecTimeDisplay(on BOOLEAN)
+    CALL this._check_initialized()
+    LET this.showtimerem = on
+END FUNCTION
+
+#+ Sets the format to show the current value.
 #+
 #+ Note that in infinite mode, no value will be displayed.
 #+
@@ -392,6 +421,8 @@ PUBLIC FUNCTION (this progress_dialog) show() RETURNS()
 END FUNCTION
 
 #+ Sets the progress value and refreshes display.
+#+
+#+ This method is equivalent to setValue() + show().
 #+
 #+ @param value The value to be set in the progressbar.
 #+

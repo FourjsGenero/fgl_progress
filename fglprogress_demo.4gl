@@ -10,6 +10,7 @@ DEFINE rec RECORD
            confirm BOOLEAN,
            canintr BOOLEAN,
            showtimefmt STRING,
+           showtimerem BOOLEAN,
            showvalfmt STRING,
            refreshtm STRING
        END RECORD
@@ -30,6 +31,7 @@ MAIN
     LET rec.confirm = TRUE
     LET rec.canintr = TRUE
     LET rec.showtimefmt = NULL
+    LET rec.showtimerem = FALSE
     LET rec.showvalfmt = NULL
     LET rec.refreshtm = "0.500"
 
@@ -64,6 +66,7 @@ FUNCTION test_infinite()
        CALL p.withInterruption(rec.canintr)
     END IF
     CALL p.setExecTimeDisplayFormat(rec.showtimefmt)
+    CALL p.withRemainingExecTimeDisplay(rec.showtimerem)
     CALL p.setValueDisplayFormat(rec.showvalfmt)
     CALL p.setRefreshInterval(rec.refreshtm) -- Converted from string
 
@@ -97,6 +100,7 @@ FUNCTION test_finite()
     CALL p.withConfirmation(rec.confirm)
     CALL p.withInterruption(rec.canintr)
     CALL p.setExecTimeDisplayFormat(rec.showtimefmt)
+    CALL p.withRemainingExecTimeDisplay(rec.showtimerem)
     CALL p.setValueDisplayFormat(rec.showvalfmt)
 
     CALL p.open()

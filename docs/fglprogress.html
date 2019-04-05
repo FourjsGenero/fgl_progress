@@ -103,7 +103,7 @@
 <tr>
 <td class="summary-text"></td>
 <td class="summary-text">
-<b><a href="#progress_dialog.setExecTimeDisplayFormat">progress_dialog.setExecTimeDisplayFormat</a></b>(fmt STRING)<br> Sets the format to show the execution time at the end of the comment.</td>
+<b><a href="#progress_dialog.setExecTimeDisplayFormat">progress_dialog.setExecTimeDisplayFormat</a></b>(fmt STRING)<br> Sets the format to show the execution time.</td>
 </tr>
 <tr>
 <td class="summary-text"></td>
@@ -118,7 +118,7 @@
 <tr>
 <td class="summary-text"></td>
 <td class="summary-text">
-<b><a href="#progress_dialog.setValueDisplayFormat">progress_dialog.setValueDisplayFormat</a></b>(fmt STRING)<br> Sets the format to show the current value at the end of the comment.</td>
+<b><a href="#progress_dialog.setValueDisplayFormat">progress_dialog.setValueDisplayFormat</a></b>(fmt STRING)<br> Sets the format to show the current value.</td>
 </tr>
 <tr>
 <td class="summary-text"></td>
@@ -153,6 +153,11 @@
 <tr>
 <td class="summary-text"></td>
 <td class="summary-text">
+<b><a href="#progress_dialog.withRemainingExecTimeDisplay">progress_dialog.withRemainingExecTimeDisplay</a></b>(on BOOLEAN)<br> Sets the flag to show the remaining execution time.</td>
+</tr>
+<tr>
+<td class="summary-text"></td>
+<td class="summary-text">
 <b><a href="#progress_dialog.withSqlInterruption">progress_dialog.withSqlInterruption</a></b>(on BOOLEAN)<br> Sets the flag to enable SQL interruption automatically.</td>
 </tr>
 </table>
@@ -178,6 +183,7 @@
 <tr><td>infinite BOOLEAN</td></tr>
 <tr><td>dispval INTEGER</td></tr>
 <tr><td>showtimefmt STRING</td></tr>
+<tr><td>showtimerem BOOLEAN</td></tr>
 <tr><td>showvalfmt STRING</td></tr>
 <tr><td>canceled BOOLEAN</td></tr>
 <tr><td>ts_start DATETIME YEAR TO FRACTION</td></tr>
@@ -286,7 +292,10 @@
 <hr>
 <h3><a id="progress_dialog.progress">progress</a></h3>
 <tt>FUNCTION <b>progress</b>(value <a href="#progress_dialog_value_type">progress_dialog_value_type</a>)</tt><dl>
-<dd><p> Sets the progress value and refreshes display.</p></dd>
+<dd>
+<p> Sets the progress value and refreshes display.</p>
+<p> This method is equivalent to setValue() + show().</p>
+</dd>
 <dd><dl>
 <dt><b>Parameters:</b></dt>
 <dd>
@@ -308,7 +317,7 @@
 <hr>
 <h3><a id="progress_dialog.setExecTimeDisplayFormat">setExecTimeDisplayFormat</a></h3>
 <tt>FUNCTION <b>setExecTimeDisplayFormat</b>(fmt STRING)</tt><dl>
-<dd><p> Sets the format to show the execution time at the end of the comment.</p></dd>
+<dd><p> Sets the format to show the execution time.</p></dd>
 <dd><dl>
 <dt><b>Parameters:</b></dt>
 <dd>
@@ -349,7 +358,7 @@
 <h3><a id="progress_dialog.setValueDisplayFormat">setValueDisplayFormat</a></h3>
 <tt>FUNCTION <b>setValueDisplayFormat</b>(fmt STRING)</tt><dl>
 <dd>
-<p> Sets the format to show the current value at the end of the comment.</p>
+<p> Sets the format to show the current value.</p>
 <p> Note that in infinite mode, no value will be displayed.</p>
 </dd>
 <dd><dl>
@@ -432,6 +441,20 @@
 <dt><b>Parameters:</b></dt>
 <dd>
 <code>on</code> - TRUE = with Cancel button, FALSE = without.<br>
+</dd>
+</dl></dd>
+</dl>
+<hr>
+<h3><a id="progress_dialog.withRemainingExecTimeDisplay">withRemainingExecTimeDisplay</a></h3>
+<tt>FUNCTION <b>withRemainingExecTimeDisplay</b>(on BOOLEAN)</tt><dl>
+<dd>
+<p> Sets the flag to show the remaining execution time.</p>
+<p> The time format must be specified with setExecTimeDisplayFormat().</p>
+</dd>
+<dd><dl>
+<dt><b>Parameters:</b></dt>
+<dd>
+<code>on</code> - TRUE to show the execution time as remaining time.<br>
 </dd>
 </dl></dd>
 </dl>
