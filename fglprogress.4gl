@@ -8,6 +8,7 @@ PUBLIC TYPE progress_dialog_value_type DECIMAL(32,6)
 PUBLIC TYPE progress_dialog RECORD
     initialized BOOLEAN,
     title STRING,
+    icon STRING,
     comment STRING,
     vmin progress_dialog_value_type,
     vmax progress_dialog_value_type,
@@ -94,7 +95,7 @@ PRIVATE FUNCTION (this progress_dialog) _check_vstp() RETURNS()
     END IF
 END FUNCTION
 
-#+ Initializes a progress dialog object.
+#+ Initializes a progress dialog object for a known range of values.
 #+
 #+ @param title The title of the progress window.
 #+ @param comment The comment to be displayed in the progress window.
@@ -138,6 +139,16 @@ PUBLIC FUNCTION (this progress_dialog) initialize( title STRING, comment STRING,
     END IF
 END FUNCTION
 
+#+ Initializes a progress dialog object for a unknown range of values.
+#+
+#+ @param title The title of the progress window.
+#+ @param comment The comment to be displayed in the progress window.
+#+
+PUBLIC FUNCTION (this progress_dialog) initializeInfinite( title STRING, comment STRING)
+                                       RETURNS()
+    CALL this.initialize(title, comment, NULL, NULL, NULL)
+END FUNCTION
+
 #+ Defines the time interval to refresh the display.
 #+
 #+ The show(), progress() or step()/stepInfinite() methods may be called very often.
@@ -152,6 +163,15 @@ END FUNCTION
 PUBLIC FUNCTION (this progress_dialog) setRefreshInterval(itv INTERVAL SECOND TO FRACTION(3)) RETURNS ()
     CALL this._check_initialized()
     LET this.ts_disp_interval = itv
+END FUNCTION
+
+#+ Sets the image to be displayed as icon.
+#+
+#+ @param resource The filename/URL of the image resource.
+#+
+PUBLIC FUNCTION (this progress_dialog) setIcon(resource STRING) RETURNS ()
+    CALL this._check_initialized()
+    LET this.icon = resource
 END FUNCTION
 
 PRIVATE FUNCTION (this progress_dialog) _getExecTime() RETURNS STRING
@@ -171,6 +191,13 @@ END FUNCTION
 
 PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
     DEFINE exectime, dispvaltxt STRING
+    -- Image
+    IF LENGTH(this.icon)==0 THEN
+        CALL this.form.setFieldHidden("icon", 1)
+    ELSE
+        CALL this.form.setFieldHidden("icon", 0)
+        DISPLAY BY NAME this.icon
+    END IF
     -- Comment
     IF LENGTH(this.comment)==0 THEN
         CALL this.form.setFieldHidden("comment", 1)

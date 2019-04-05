@@ -1,6 +1,7 @@
 LAYOUT (VERSION="1.00",STYLE="main2")
 GRID
 {
+Icon:    [ico                                                 ]
 Title:   [ttl                                                 ]
 Comment: [cmt                                                 ]
          [                                                    ]
@@ -25,6 +26,8 @@ END
 END
 
 ATTRIBUTES
+COMBOBOX ico = FORMONLY.icon,
+    ITEMS=("fourjs_logo.png");
 EDIT ttl = FORMONLY.title;
 TEXTEDIT cmt = FORMONLY.comment;
 EDIT vmin = FORMONLY.vmin;

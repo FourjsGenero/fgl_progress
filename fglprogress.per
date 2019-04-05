@@ -1,9 +1,10 @@
 LAYOUT (VERSION="1.00",STYLE="dialog2")
 GRID
 {
-[cmt                                                          ]
-[                                                             ]
-[                                                             ]
+[ico     ][cmt                                                ]
+[        ][                                                   ]
+[        ][                                                   ]
+[        ][                                                   ]
 [prg                                                          ]
 [val                 ]                      [etm              ]
 [                              :b1             :b2            ]
@@ -12,6 +13,7 @@ END
 END
 
 ATTRIBUTES
+IMAGE ico = FORMONLY.icon, SIZEPOLICY=FIXED, AUTOSCALE;
 LABEL cmt = FORMONLY.comment, JUSTIFY=CENTER;
 PROGRESSBAR prg  = FORMONLY.dispval,VALUEMIN=0,VALUEMAX=100;
 LABEL val = FORMONLY.dispvaltxt;

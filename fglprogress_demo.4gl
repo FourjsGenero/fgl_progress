@@ -1,6 +1,7 @@
 IMPORT FGL fglprogress
 
 DEFINE rec RECORD
+           icon STRING,
            title STRING,
            comment STRING,
            vmin DECIMAL(20,5),
@@ -22,6 +23,7 @@ MAIN
     OPEN FORM f1 FROM "fglprogress_demo"
     DISPLAY FORM f1
 
+    LET rec.icon = "fourjs_logo.png"
     LET rec.title = "My application"
     LET rec.comment = "Processing data..."
     LET rec.vmin = -0.20
@@ -57,7 +59,8 @@ END MAIN
 FUNCTION test_infinite()
     DEFINE p fglprogress.progress_dialog
 
-    CALL p.initialize(rec.title,rec.comment,NULL,NULL,NULL)
+    CALL p.initializeInfinite(rec.title,rec.comment)
+    CALL p.setIcon(rec.icon)
     CALL p.withConfirmation(rec.confirm)
     IF NOT rec.canintr THEN
        IF NOT mbox_yn("Progress","Do you really want to start an infinite loop without interruption button?") THEN
@@ -96,6 +99,7 @@ FUNCTION test_finite()
     DEFINE p fglprogress.progress_dialog
 
     CALL p.initialize(rec.title,rec.comment,rec.vmin,rec.vmax,rec.vstp)
+    CALL p.setIcon(rec.icon)
     LET rec.vstp = p.getStep() -- Get default from fglprogress if NULL specified
     CALL p.withConfirmation(rec.confirm)
     CALL p.withInterruption(rec.canintr)

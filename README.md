@@ -40,7 +40,7 @@ This library is under [MIT license](./LICENSE)
 * Multi-line comment
 * FUNCTION reference/callback for custom rendering with webcomponent (SVG gauge)
 
-## Code example: Fixed range mode
+## Code example: With known range of values
 
 ```
     DEFINE p fglprogress.progress_dialog
@@ -73,11 +73,12 @@ This library is under [MIT license](./LICENSE)
 
 ```
 
-## Code example: Undefined range mode
+## Code example: With undefined value range (infinite)
 
 ```
     DEFINE p fglprogress.progress_dialog
-    CALL p.initialize("MyApp","Processing big data...",NULL,NULL,NULL)
+    CALL p.initializeInfinite("MyApp","Processing big data...")
+    CALL p.setIcon("mylogo.png")
     CALL p.withConfirmation(TRUE)
     CALL p.setExecTimeDisplayFormat(TRUE)
     CALL p.open()
