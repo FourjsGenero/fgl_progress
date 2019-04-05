@@ -6,7 +6,8 @@ BINS=\
  fglprogress_demo.42m\
  fglprogress_demo.42f
 
-all: $(BINS) doc
+#all: $(BINS) doc
+all: $(BINS)
 
 run:: $(BINS)
 	fglrun fglprogress_demo
