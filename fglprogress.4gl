@@ -26,12 +26,38 @@ PUBLIC TYPE progress_dialog RECORD
     ts_infinite DATETIME YEAR TO FRACTION(3),
     ts_disp_interval INTERVAL SECOND TO FRACTION(3),
     window ui.Window,
+    window_id STRING,
     form ui.Form
 END RECORD
+
+PRIVATE DEFINE _window_ids DYNAMIC ARRAY OF STRING
+PRIVATE CONSTANT MAX_WINDOWS = 5
 
 PRIVATE FUNCTION _fatal_error(msg STRING) RETURNS()
     DISPLAY "fglprogress: Fatal error: ", msg
     EXIT PROGRAM 1
+END FUNCTION
+
+PRIVATE FUNCTION _window_ids_new() RETURNS STRING
+    DEFINE x INTEGER
+    LET x = _window_ids.getLength()
+    IF x==MAX_WINDOWS THEN
+       CALL _fatal_error("All WINDOWs are used")
+    ELSE
+       LET x = x + 1
+    END IF
+    LET _window_ids[x] = SFMT("win%1", x)
+    RETURN _window_ids[x]
+END FUNCTION
+
+PRIVATE FUNCTION _window_ids_del(name STRING)
+    DEFINE x INTEGER
+    LET x = _window_ids.search(NULL,name)
+    IF x > 0 THEN
+       CALL _window_ids.deleteElement(x)
+    ELSE
+       CALL _fatal_error(SFMT("Unknown WINDOW %1",name))
+    END IF
 END FUNCTION
 
 PRIVATE FUNCTION (this progress_dialog) _check_initialized() RETURNS()
@@ -218,6 +244,7 @@ END FUNCTION
 #+ Opens the progress window.
 PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
     CALL this._check_open(FALSE)
+    LET this.window_id = _window_ids_new() -- can fail
     LET int_flag = FALSE
     LET this.canceled = FALSE
     LET this.ts_start = CURRENT
@@ -226,11 +253,13 @@ PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
     IF this.sqlintr THEN
        OPTIONS SQL INTERRUPT ON
     END IF
-    -- TODO: Manage a list of windows to open several progress dialogs?
-    OPEN WINDOW __fglprogress
-        WITH
-        FORM "fglprogress"
-        ATTRIBUTES(STYLE = "dialog2", TEXT = this.title)
+    CASE this.window_id
+    WHEN "win1" OPEN WINDOW __fglprogress_1 WITH FORM "fglprogress" ATTRIBUTES(STYLE = "dialog2", TEXT=this.title)
+    WHEN "win2" OPEN WINDOW __fglprogress_2 WITH FORM "fglprogress" ATTRIBUTES(STYLE = "dialog2", TEXT=this.title)
+    WHEN "win3" OPEN WINDOW __fglprogress_3 WITH FORM "fglprogress" ATTRIBUTES(STYLE = "dialog2", TEXT=this.title)
+    WHEN "win4" OPEN WINDOW __fglprogress_4 WITH FORM "fglprogress" ATTRIBUTES(STYLE = "dialog2", TEXT=this.title)
+    WHEN "win5" OPEN WINDOW __fglprogress_5 WITH FORM "fglprogress" ATTRIBUTES(STYLE = "dialog2", TEXT=this.title)
+    END CASE
     LET this.window = ui.Window.getCurrent()
     LET this.form = this.window.getForm()
     CALL this._sync_deco()
@@ -323,7 +352,13 @@ PUBLIC FUNCTION (this progress_dialog) getComment() RETURNS STRING
 END FUNCTION
 
 PRIVATE FUNCTION (this progress_dialog) _refreshDisplay() RETURNS()
-    CURRENT WINDOW IS __fglprogress
+    CASE this.window_id
+    WHEN "win1" CURRENT WINDOW IS __fglprogress_1
+    WHEN "win2" CURRENT WINDOW IS __fglprogress_2
+    WHEN "win3" CURRENT WINDOW IS __fglprogress_3
+    WHEN "win4" CURRENT WINDOW IS __fglprogress_4
+    WHEN "win5" CURRENT WINDOW IS __fglprogress_5
+    END CASE
     CALL this._sync_deco()
     DISPLAY BY NAME this.dispval
     CALL ui.Interface.refresh()
@@ -461,7 +496,15 @@ PUBLIC FUNCTION (this progress_dialog) close()
           ON ACTION close EXIT MENU -- cross button
        END MENU
     END IF
-    CLOSE WINDOW __fglprogress
+    CASE this.window_id
+    WHEN "win1" CLOSE WINDOW __fglprogress_1
+    WHEN "win2" CLOSE WINDOW __fglprogress_2
+    WHEN "win3" CLOSE WINDOW __fglprogress_3
+    WHEN "win4" CLOSE WINDOW __fglprogress_4
+    WHEN "win5" CLOSE WINDOW __fglprogress_5
+    END CASE
+    CALL _window_ids_del(this.window_id)
+    LET this.window_id = 0
     LET this.window = NULL
     LET this.form = NULL
 END FUNCTION
