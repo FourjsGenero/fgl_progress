@@ -13,7 +13,7 @@ This library is under [MIT license](./LICENSE)
 ## Prerequisites
 
 * Genero BDL 3.20.02+
-* Genero Browser Client 1.00.51+
+* Genero Browser Client 1.00.52+
 * Genero Desktop Client 3.20.02+
 * Genero Mobile for Android 1.40.01+
 * Genero Mobile for iOS 1.40.01+
@@ -35,8 +35,10 @@ This library is under [MIT license](./LICENSE)
 
 ## TODO
 
-* Display estimated remaining time
+* Option to perform OPTIONS SQL INTERRUPT ON/OFF automatically
+* Display estimated remaining time, computed from previous steps with a known range
 * Multiple object instances support (only one OPEN WINDOW for now)
+* FUNCTION reference/callback for custom rendering with webcomponent (SVG gauge)
 
 ## Code example: Fixed range mode
 
