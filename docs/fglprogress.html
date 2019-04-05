@@ -348,11 +348,14 @@
 <hr>
 <h3><a id="progress_dialog.setValueDisplayFormat">setValueDisplayFormat</a></h3>
 <tt>FUNCTION <b>setValueDisplayFormat</b>(fmt STRING)</tt><dl>
-<dd><p> Sets the format to show the current value at the end of the comment.</p></dd>
+<dd>
+<p> Sets the format to show the current value at the end of the comment.</p>
+<p> Note that in infinite mode, no value will be displayed.</p>
+</dd>
 <dd><dl>
 <dt><b>Parameters:</b></dt>
 <dd>
-<code>fmt</code> - The USING format for the value, like "----&amp;.&amp;&amp;"<br>
+<code>fmt</code> - Can be "percentage" or a USING format like "----&amp;.&amp;&amp;".<br>
 </dd>
 </dl></dd>
 </dl>

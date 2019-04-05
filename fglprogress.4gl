@@ -155,7 +155,7 @@ END FUNCTION
 
 PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
     DEFINE iv INTERVAL HOUR(4) TO FRACTION(3)
-    DEFINE exectime, currval STRING
+    DEFINE exectime, dispvaltxt STRING
     IF LENGTH(this.comment)==0 THEN
         CALL this.form.setFieldHidden("comment", 1)
     ELSE
@@ -170,12 +170,16 @@ PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
         LET exectime = util.Interval.format(iv,this.showtimefmt)
         DISPLAY BY NAME exectime
     END IF
-    IF LENGTH(this.showvalfmt)==0 THEN
-        CALL this.form.setFieldHidden("currval", 1)
+    IF LENGTH(this.showvalfmt)==0 OR this.infinite THEN
+        CALL this.form.setFieldHidden("dispvaltxt", 1)
     ELSE
-        CALL this.form.setFieldHidden("currval", 0)
-        LET currval = this.value USING this.showvalfmt
-        DISPLAY BY NAME currval
+        CALL this.form.setFieldHidden("dispvaltxt", 0)
+        IF this.showvalfmt == "percentage" THEN
+            LET dispvaltxt = SFMT("%1 %%",this.dispval)
+        ELSE
+            LET dispvaltxt = this.value USING this.showvalfmt
+        END IF
+        DISPLAY BY NAME dispvaltxt
     END IF
     CALL this.form.setElementHidden("interrupt", IIF(this.canintr,0,1))
     CALL this.form.setElementHidden("terminate", IIF(this.confirm,0,1))
@@ -227,7 +231,9 @@ END FUNCTION
 
 #+ Sets the format to show the current value at the end of the comment.
 #+
-#+ @param fmt The USING format for the value, like "----&.&&"
+#+ Note that in infinite mode, no value will be displayed.
+#+
+#+ @param fmt Can be "percentage" or a USING format like "----&.&&".
 #+
 PUBLIC FUNCTION (this progress_dialog) setValueDisplayFormat(fmt STRING)
     CALL this._check_initialized()
