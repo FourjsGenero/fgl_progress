@@ -12,7 +12,7 @@ This library is under [MIT license](./LICENSE)
 
 ## Prerequisites
 
-* Genero BDL 3.20.02+
+* Genero BDL 3.20.03+
 * Genero Browser Client 1.00.52+
 * Genero Desktop Client 3.20.02+
 * Genero Mobile for Android 1.40.01+

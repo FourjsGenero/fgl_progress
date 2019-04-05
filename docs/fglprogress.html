@@ -73,7 +73,12 @@
 <tr>
 <td class="summary-text"></td>
 <td class="summary-text">
-<b><a href="#progress_dialog.initialize">progress_dialog.initialize</a></b>(title STRING, comment STRING, vmin <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vmax <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vstp <a href="#progress_dialog_value_type">progress_dialog_value_type</a>)<br> Initializes a progress dialog object.</td>
+<b><a href="#progress_dialog.initialize">progress_dialog.initialize</a></b>(title STRING, comment STRING, vmin <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vmax <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vstp <a href="#progress_dialog_value_type">progress_dialog_value_type</a>)<br> Initializes a progress dialog object for a known range of values.</td>
+</tr>
+<tr>
+<td class="summary-text"></td>
+<td class="summary-text">
+<b><a href="#progress_dialog.initializeInfinite">progress_dialog.initializeInfinite</a></b>(title STRING, comment STRING)<br> Initializes a progress dialog object for a unknown range of values.</td>
 </tr>
 <tr>
 <td class="summary-text"></td>
@@ -104,6 +109,11 @@
 <td class="summary-text"></td>
 <td class="summary-text">
 <b><a href="#progress_dialog.setExecTimeDisplayFormat">progress_dialog.setExecTimeDisplayFormat</a></b>(fmt STRING)<br> Sets the format to show the execution time.</td>
+</tr>
+<tr>
+<td class="summary-text"></td>
+<td class="summary-text">
+<b><a href="#progress_dialog.setIcon">progress_dialog.setIcon</a></b>(resource STRING)<br> Sets the image to be displayed as icon.</td>
 </tr>
 <tr>
 <td class="summary-text"></td>
@@ -168,6 +178,7 @@
 <td><table border="0" cellpadding="0" cellspacing="0" class="member">
 <tr><td>initialized BOOLEAN</td></tr>
 <tr><td>title STRING</td></tr>
+<tr><td>icon STRING</td></tr>
 <tr><td>comment STRING</td></tr>
 <tr><td>vmin <a href="#progress_dialog_value_type">progress_dialog_value_type</a>
 </td></tr>
@@ -260,11 +271,22 @@
 <hr>
 <h3><a id="progress_dialog.initialize">initialize</a></h3>
 <tt>FUNCTION <b>initialize</b>(title STRING, comment STRING, vmin <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vmax <a href="#progress_dialog_value_type">progress_dialog_value_type</a>, vstp <a href="#progress_dialog_value_type">progress_dialog_value_type</a>)</tt><dl>
-<dd><p> Initializes a progress dialog object.</p></dd>
+<dd><p> Initializes a progress dialog object for a known range of values.</p></dd>
 <dd><dl>
 <dt><b>Parameters:</b></dt>
 <dd>
 <code>title</code> - The title of the progress window.<br><code>comment</code> - The comment to be displayed in the progress window.<br><code>vmin</code> - The minimum value for the progress bar.<br><code>vmax</code> - The maximum value for the progress bar.<br><code>vstp</code> - The step value to be used by the step() method.<br>
+</dd>
+</dl></dd>
+</dl>
+<hr>
+<h3><a id="progress_dialog.initializeInfinite">initializeInfinite</a></h3>
+<tt>FUNCTION <b>initializeInfinite</b>(title STRING, comment STRING)</tt><dl>
+<dd><p> Initializes a progress dialog object for a unknown range of values.</p></dd>
+<dd><dl>
+<dt><b>Parameters:</b></dt>
+<dd>
+<code>title</code> - The title of the progress window.<br><code>comment</code> - The comment to be displayed in the progress window.<br>
 </dd>
 </dl></dd>
 </dl>
@@ -322,6 +344,17 @@
 <dt><b>Parameters:</b></dt>
 <dd>
 <code>fmt</code> - The util.Intervale.format() style format, like "%H:%M:%S"<br>
+</dd>
+</dl></dd>
+</dl>
+<hr>
+<h3><a id="progress_dialog.setIcon">setIcon</a></h3>
+<tt>FUNCTION <b>setIcon</b>(resource STRING)</tt><dl>
+<dd><p> Sets the image to be displayed as icon.</p></dd>
+<dd><dl>
+<dt><b>Parameters:</b></dt>
+<dd>
+<code>resource</code> - The filename/URL of the image resource.<br>
 </dd>
 </dl></dd>
 </dl>
