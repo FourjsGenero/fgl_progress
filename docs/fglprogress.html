@@ -150,6 +150,11 @@
 <td class="summary-text">
 <b><a href="#progress_dialog.withInterruption">progress_dialog.withInterruption</a></b>(on BOOLEAN)<br> Sets the flag to get a Cancel button to interrupt the process.</td>
 </tr>
+<tr>
+<td class="summary-text"></td>
+<td class="summary-text">
+<b><a href="#progress_dialog.withSqlInterruption">progress_dialog.withSqlInterruption</a></b>(on BOOLEAN)<br> Sets the flag to enable SQL interruption automatically.</td>
+</tr>
 </table>
 <br><h2>Types</h2>
 <a id="progress_dialog"> </a><h3>progress_dialog</h3>
@@ -169,6 +174,7 @@
 </td></tr>
 <tr><td>confirm BOOLEAN</td></tr>
 <tr><td>canintr BOOLEAN</td></tr>
+<tr><td>sqlintr BOOLEAN</td></tr>
 <tr><td>infinite BOOLEAN</td></tr>
 <tr><td>dispval INTEGER</td></tr>
 <tr><td>showtimefmt STRING</td></tr>
@@ -422,6 +428,22 @@
 <dt><b>Parameters:</b></dt>
 <dd>
 <code>on</code> - TRUE = with Cancel button, FALSE = without.<br>
+</dd>
+</dl></dd>
+</dl>
+<hr>
+<h3><a id="progress_dialog.withSqlInterruption">withSqlInterruption</a></h3>
+<tt>FUNCTION <b>withSqlInterruption</b>(on BOOLEAN)</tt><dl>
+<dd>
+<p> Sets the flag to enable SQL interruption automatically.</p>
+<p> The user interruption option must be enabled by withInterruption(TRUE).</p>
+<p> When calling the open() method, OPTIONS SQL INTERRUPT ON is executed.
+ When calling the close() method, OPTIONS SQL INTERRUPT OFF is executed.</p>
+</dd>
+<dd><dl>
+<dt><b>Parameters:</b></dt>
+<dd>
+<code>on</code> - TRUE = with SQL interruption, FALSE = without.<br>
 </dd>
 </dl></dd>
 </dl>

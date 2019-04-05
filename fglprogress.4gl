@@ -15,6 +15,7 @@ PUBLIC TYPE progress_dialog RECORD
     value progress_dialog_value_type,
     confirm BOOLEAN,
     canintr BOOLEAN,
+    sqlintr BOOLEAN,
     infinite BOOLEAN,
     dispval INTEGER,
     showtimefmt STRING,
@@ -87,6 +88,7 @@ PUBLIC FUNCTION (this progress_dialog) initialize( title STRING, comment STRING,
     LET this.comment = comment
     LET this.confirm = FALSE
     LET this.canintr = TRUE
+    LET this.sqlintr = FALSE
     LET this.ts_disp_interval = INTERVAL(0.100) SECOND TO FRACTION(3)
     LET this.value = NULL
     IF vmin IS NOT NULL AND vmax IS NOT NULL THEN
@@ -171,6 +173,23 @@ PUBLIC FUNCTION (this progress_dialog) withInterruption(on BOOLEAN)
     LET this.canintr = on
 END FUNCTION
 
+#+ Sets the flag to enable SQL interruption automatically.
+#+
+#+ The user interruption option must be enabled by withInterruption(TRUE).
+#+
+#+ When calling the open() method, OPTIONS SQL INTERRUPT ON is executed.
+#+ When calling the close() method, OPTIONS SQL INTERRUPT OFF is executed.
+#+
+#+ @param on TRUE = with SQL interruption, FALSE = without.
+#+
+PUBLIC FUNCTION (this progress_dialog) withSqlInterruption(on BOOLEAN)
+    CALL this._check_initialized()
+    IF on AND NOT this.canintr THEN
+        CALL _fatal_error("User interruption is off")
+    END IF
+    LET this.sqlintr = on
+END FUNCTION
+
 #+ Sets the format to show the execution time at the end of the comment.
 #+
 #+ @param fmt The util.Intervale.format() style format, like "%H:%M:%S"
@@ -204,6 +223,9 @@ PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
     LET this.ts_start = CURRENT
     LET this.ts_last = this.ts_start
     LET this.ts_infinite = this.ts_start
+    IF this.sqlintr THEN
+       OPTIONS SQL INTERRUPT ON
+    END IF
     -- TODO: Manage a list of windows to open several progress dialogs?
     OPEN WINDOW __fglprogress
         WITH
@@ -430,6 +452,9 @@ END FUNCTION
 #+
 PUBLIC FUNCTION (this progress_dialog) close()
     CALL this._check_open(TRUE)
+    IF this.sqlintr THEN
+       OPTIONS SQL INTERRUPT OFF
+    END IF
     IF this.confirm AND NOT this.canceled THEN
        MENU ""
           ON ACTION terminate EXIT MENU

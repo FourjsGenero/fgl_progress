@@ -32,10 +32,10 @@ This library is under [MIT license](./LICENSE)
 * Undefined/infinite range mode (no start/end value, just show progress until finished)
 * In infinite mode, adapts automatically display refresh to the frequency of step() calls
 * Several programming modes (progress(v), step(), stepInfinite())
+* Can automatically execute OPTIONS SQL INTERRUPT ON/OFF at open()/close().
 
 ## TODO
 
-* Option to perform OPTIONS SQL INTERRUPT ON/OFF automatically
 * Display estimated remaining time, computed from previous steps with a known range
 * Multiple object instances support (only one OPEN WINDOW for now)
 * FUNCTION reference/callback for custom rendering with webcomponent (SVG gauge)
