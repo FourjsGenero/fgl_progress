@@ -227,7 +227,7 @@ PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
     END IF
     -- Buttons
     CALL this.form.setElementHidden("interrupt", IIF(this.canintr,0,1))
-    CALL this.form.setElementHidden("terminate", IIF(this.confirm,0,1))
+    CALL this.form.setElementHidden("close", IIF(this.confirm,0,1))
 END FUNCTION
 
 #+ Sets the flag to get an OK button for confirmation when done.
@@ -556,8 +556,7 @@ PUBLIC FUNCTION (this progress_dialog) close()
     END IF
     IF this.confirm AND NOT this.canceled THEN
        MENU ""
-          ON ACTION terminate EXIT MENU
-          ON ACTION close EXIT MENU -- cross button
+          ON ACTION close EXIT MENU
        END MENU
     END IF
     CASE this.window_id

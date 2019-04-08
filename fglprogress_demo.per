@@ -13,8 +13,8 @@ Max value (NULL for inf)   [vmax                              ]
 Step value:                [vstp                              ]
 
 Sleep seconds between steps:  [wsec                           ]
-User can interrupt (Cancel):  [ccl                            ]
-User confirmation (OK):       [cnf                            ]
+User can interrupt:           [ccl                            ]
+User confirmation:            [cnf                            ]
 Time display format:          [etm                |etr        ]
 Value display format:         [dvf                            ]
 Display refresh interval:     [dri                            ]
@@ -49,6 +49,6 @@ COMBOBOX dvf = FORMONLY.showvalfmt,
 COMBOBOX dri = FORMONLY.refreshtm, NOT NULL,
     ITEMS=("0.005","0.010","0.100","0.500","1.000","2.000");
 BUTTON b1 : test, TEXT="Start test";
-BUTTON b2 : cancel, TEXT="Close";
+BUTTON b2 : close, TEXT="Close";
 END
 

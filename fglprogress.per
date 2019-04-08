@@ -1,3 +1,6 @@
+ACTION DEFAULTS
+ACTION close (ACCELERATOR=ENTER,ACCELERATOR2=RETURN)
+END
 LAYOUT (VERSION="1.00",STYLE="dialog2")
 GRID
 {
@@ -19,6 +22,6 @@ PROGRESSBAR prg  = FORMONLY.dispval,VALUEMIN=0,VALUEMAX=100;
 LABEL val = FORMONLY.dispvaltxt;
 LABEL etm = FORMONLY.exectime;
 BUTTON b1 : interrupt, TEXT="Cancel";
-BUTTON b2 : terminate, TEXT="Close";
+BUTTON b2 : close, TEXT="Close";
 END
 
