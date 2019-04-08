@@ -178,7 +178,7 @@ PUBLIC FUNCTION (this progress_dialog) setIcon(resource STRING) RETURNS ()
     LET this.icon = resource
 END FUNCTION
 
-PRIVATE FUNCTION (this progress_dialog) _getExecTime() RETURNS STRING
+PRIVATE FUNCTION (this progress_dialog) _get_exec_time() RETURNS STRING
     DEFINE pd, pr DECIMAL(10)
     DEFINE et INTERVAL HOUR(4) TO FRACTION(3)
     LET et = this.ts_last - this.ts_start
@@ -214,7 +214,7 @@ PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
         CALL this.form.setFieldHidden("exectime", 1)
     ELSE
         CALL this.form.setFieldHidden("exectime", 0)
-        LET exectime = this._getExecTime()
+        LET exectime = this._get_exec_time()
         DISPLAY BY NAME exectime
     END IF
     -- Current value
@@ -335,7 +335,7 @@ PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
     CALL this.show()
 END FUNCTION
 
-PRIVATE FUNCTION (this progress_dialog) _setValue(value progress_dialog_value_type) RETURNS()
+PRIVATE FUNCTION (this progress_dialog) _set_value(value progress_dialog_value_type) RETURNS()
     DEFINE vlen progress_dialog_value_type
     CALL this._check_open(TRUE)
     IF value >= this.vmin AND value <= this.vmax THEN
@@ -357,7 +357,7 @@ END FUNCTION
 #+
 PUBLIC FUNCTION (this progress_dialog) setValue(value progress_dialog_value_type) RETURNS()
     CALL this._check_infinite(FALSE)
-    CALL this._setValue(value)
+    CALL this._set_value(value)
 END FUNCTION
 
 #+ Returns current progress value.
@@ -420,7 +420,7 @@ PUBLIC FUNCTION (this progress_dialog) getComment() RETURNS STRING
     RETURN this.comment
 END FUNCTION
 
-PRIVATE FUNCTION (this progress_dialog) _refreshDisplay() RETURNS()
+PRIVATE FUNCTION (this progress_dialog) _refresh_display() RETURNS()
     CASE this.window_id
     WHEN "win1" CURRENT WINDOW IS __fglprogress_1
     WHEN "win2" CURRENT WINDOW IS __fglprogress_2
@@ -450,7 +450,7 @@ PUBLIC FUNCTION (this progress_dialog) show() RETURNS()
             RETURN
         END IF
     END IF
-    CALL this._refreshDisplay()
+    CALL this._refresh_display()
     LET this.ts_last = CURRENT
 END FUNCTION
 
@@ -463,7 +463,7 @@ END FUNCTION
 PUBLIC FUNCTION (this progress_dialog) progress(value progress_dialog_value_type)
     CALL this._check_open(TRUE)
     CALL this._check_infinite(FALSE)
-    CALL this._setValue(value)
+    CALL this._set_value(value)
     CALL this.show()
 END FUNCTION
 
@@ -473,7 +473,7 @@ PRIVATE FUNCTION (this progress_dialog) _step() RETURNS BOOLEAN
     CALL this._check_open(TRUE)
     IF this.value IS NULL THEN -- First call
        LET x = this.vmin
-       CALL this._setValue(x)
+       CALL this._set_value(x)
        CALL this.show()
        IF NOT this.infinite THEN
           CALL this._check_vstp()
@@ -484,18 +484,18 @@ PRIVATE FUNCTION (this progress_dialog) _step() RETURNS BOOLEAN
        IF NOT this.infinite THEN
           LET x = this.value + this.vstp
           IF x > this.vmax THEN
-              CALL this._setValue(this.vmax)
-              CALL this._refreshDisplay() -- Always sync display
+              CALL this._set_value(this.vmax)
+              CALL this._refresh_display() -- Always sync display
               LET r = FALSE -- Must stop now
           ELSE
-              CALL this._setValue(x)
+              CALL this._set_value(x)
               CALL this.show()
           END IF
        ELSE
           IF CURRENT - this.ts_infinite > this.ts_disp_interval THEN
               LET this.ts_infinite = CURRENT
               LET x = this.value + this.vstp
-              CALL this._setValue(x)
+              CALL this._set_value(x)
               CALL this.show()
               LET this.vstp = (this.vmax - this.vmin - x) * 0.10
           END IF
