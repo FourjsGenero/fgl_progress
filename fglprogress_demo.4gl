@@ -106,6 +106,7 @@ FUNCTION test_finite()
     CALL p.setExecTimeDisplayFormat(rec.showtimefmt)
     CALL p.withRemainingExecTimeDisplay(rec.showtimerem)
     CALL p.setValueDisplayFormat(rec.showvalfmt)
+    CALL p.setRefreshInterval(rec.refreshtm) -- Converted from string
 
     CALL p.open()
     WHILE TRUE

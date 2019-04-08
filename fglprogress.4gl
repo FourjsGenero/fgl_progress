@@ -4,6 +4,7 @@
 IMPORT util
 
 PUBLIC TYPE progress_dialog_value_type DECIMAL(32,6)
+PRIVATE CONSTANT min_disp_interval INTERVAL SECOND TO FRACTION(3) = INTERVAL(0.300) SECOND TO FRACTION(3)
 
 PUBLIC TYPE progress_dialog RECORD
     initialized BOOLEAN,
@@ -117,7 +118,7 @@ PUBLIC FUNCTION (this progress_dialog) initialize( title STRING, comment STRING,
     LET this.confirm = FALSE
     LET this.canintr = TRUE
     LET this.sqlintr = FALSE
-    LET this.ts_disp_interval = INTERVAL(0.100) SECOND TO FRACTION(3)
+    LET this.ts_disp_interval = min_disp_interval
     LET this.value = NULL
     IF vmin IS NOT NULL AND vmax IS NOT NULL THEN
         LET this.infinite = FALSE
@@ -162,6 +163,9 @@ END FUNCTION
 #+
 PUBLIC FUNCTION (this progress_dialog) setRefreshInterval(itv INTERVAL SECOND TO FRACTION(3)) RETURNS ()
     CALL this._check_initialized()
+    IF itv < min_disp_interval THEN
+       CALL _fatal_error(SFMT("Minimal display interval is %1", min_disp_interval))
+    END IF
     LET this.ts_disp_interval = itv
 END FUNCTION
 
@@ -259,9 +263,6 @@ END FUNCTION
 #+
 PUBLIC FUNCTION (this progress_dialog) withSqlInterruption(on BOOLEAN)
     CALL this._check_initialized()
-    IF on AND NOT this.canintr THEN
-        CALL _fatal_error("User interruption is off")
-    END IF
     LET this.sqlintr = on
 END FUNCTION
 
@@ -296,16 +297,22 @@ PUBLIC FUNCTION (this progress_dialog) setValueDisplayFormat(fmt STRING)
     LET this.showvalfmt = fmt
 END FUNCTION
 
-
 #+ Returns TRUE if the progress is infinite.
 PUBLIC FUNCTION (this progress_dialog) isInfinite() RETURNS BOOLEAN
     CALL this._check_initialized()
     RETURN this.infinite
 END FUNCTION
 
+PRIVATE FUNCTION (this progress_dialog) _check_combinations() RETURNS ()
+    IF this.sqlintr AND NOT this.canintr THEN
+       CALL _fatal_error("SQL interruption on but user interruption is off")
+    END IF
+END FUNCTION
+
 #+ Opens the progress window.
 PUBLIC FUNCTION (this progress_dialog) open() RETURNS()
     CALL this._check_open(FALSE)
+    CALL this._check_combinations()
     LET this.window_id = _window_ids_new() -- can fail
     LET int_flag = FALSE
     LET this.canceled = FALSE
