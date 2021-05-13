@@ -19,13 +19,13 @@ docs/fglprogress.html: fglprogress.4gl
 	mv fglprogress.html docs
 
 fglprogress.42m: fglprogress.4gl
-	fglcomp -M fglprogress.4gl
+	fglcomp -Wall -M fglprogress.4gl
 
 fglprogress.42f: fglprogress.per
 	fglform -M fglprogress.per
 
 fglprogress_demo.42m: fglprogress_demo.4gl fglprogress.4gl
-	fglcomp -M fglprogress_demo.4gl
+	fglcomp -Wall -M fglprogress_demo.4gl
 
 fglprogress_demo.42f: fglprogress_demo.per
 	fglform -M fglprogress_demo.per

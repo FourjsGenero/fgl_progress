@@ -196,21 +196,21 @@ END FUNCTION
 PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
     DEFINE exectime, dispvaltxt STRING
     -- Image
-    IF LENGTH(this.icon)==0 THEN
+    IF length(this.icon)==0 THEN
         CALL this.form.setFieldHidden("icon", 1)
     ELSE
         CALL this.form.setFieldHidden("icon", 0)
         DISPLAY BY NAME this.icon
     END IF
     -- Comment
-    IF LENGTH(this.comment)==0 THEN
+    IF length(this.comment)==0 THEN
         CALL this.form.setFieldHidden("comment", 1)
     ELSE
         CALL this.form.setFieldHidden("comment", 0)
         DISPLAY BY NAME this.comment
     END IF
     -- Execution time
-    IF LENGTH(this.showtimefmt)==0 THEN
+    IF length(this.showtimefmt)==0 THEN
         CALL this.form.setFieldHidden("exectime", 1)
     ELSE
         CALL this.form.setFieldHidden("exectime", 0)
@@ -218,7 +218,7 @@ PRIVATE FUNCTION (this progress_dialog) _sync_deco() RETURNS()
         DISPLAY BY NAME exectime
     END IF
     -- Current value
-    IF LENGTH(this.showvalfmt)==0 OR this.infinite THEN
+    IF length(this.showvalfmt)==0 OR this.infinite THEN
         CALL this.form.setFieldHidden("dispvaltxt", 1)
     ELSE
         CALL this.form.setFieldHidden("dispvaltxt", 0)

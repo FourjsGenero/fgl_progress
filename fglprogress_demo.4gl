@@ -46,7 +46,7 @@ MAIN
            LET rec.waitsecs = 0
 
         ON ACTION test
-           IF LENGTH(rec.vmin)==0 OR LENGTH(rec.vmax)==0 THEN
+           IF length(rec.vmin)==0 OR length(rec.vmax)==0 THEN
               CALL test_infinite( )
            ELSE
               CALL test_finite( )
