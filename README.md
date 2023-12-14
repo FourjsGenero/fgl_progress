@@ -23,7 +23,7 @@ This library is under [MIT license](./LICENSE)
 ## Features
 
 * Customizable decoration (title, comment, current value, percentage, execution time)
-* Supports application data ranges based on DECIMAL(32,6) (no conversion needed)
+* Application data ranges based on DECIMAL(32,6) (no conversion needed)
 * Control of the display refresh interval
 * Optional interruption of processing (Cancel button)
 * Optional end of processing confirmation (Close button)
